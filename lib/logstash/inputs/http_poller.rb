@@ -122,6 +122,7 @@ class LogStash::Inputs::HTTP_Poller < LogStash::Inputs::Base
   end
 
   def stop
+	print "stop at #{Time.new.strftime("%Y%m%dT%H%M%S.%L")}\n"
     @scheduler.stop if @scheduler
   end
 
@@ -211,11 +212,15 @@ class LogStash::Inputs::HTTP_Poller < LogStash::Inputs::Base
     raise LogStash::ConfigurationError, msg_invalid_schedule unless Schedule_types.include?(schedule_type)
 
     @scheduler = Rufus::Scheduler.new(:max_work_threads => 1)
+    print "setup_schedule at #{Time.new.strftime("%Y%m%dT%H%M%S.%L")}\n"
     @scheduler.send(schedule_type, schedule_value) { run_once(queue) }
+    print "scheduler.first_at at #{@scheduler.jobs[0].first_at.to_s}\n" if @scheduler.jobs[0].respond_to? :first_at
+    print "scheduler.next_time at #{@scheduler.jobs[0].next_time.to_s}\n"
     @scheduler.join
   end
 
   def run_once(queue)
+	print "run_once at #{Time.new.strftime("%Y%m%dT%H%M%S.%L")}\n"
     @requests.each do |name, request|
       request_async(queue, name, request)
     end

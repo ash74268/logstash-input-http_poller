@@ -159,29 +159,29 @@ describe LogStash::Inputs::HTTP_Poller do
   end
 
   describe "scheduler configuration" do
-    context "given an interval" do
-      let(:opts) {
-        {
-          "interval" => 1,
-          "urls" => default_urls,
-          "codec" => "json",
-          "metadata_target" => metadata_target
-        }
-      }
-      it "should run once in each interval" do
-        instance = klass.new(opts)
-        instance.register
-        queue = Queue.new
-        runner = Thread.new do
-          instance.run(queue)
-        end
-        sleep 3
-        instance.stop
-        runner.kill
-        runner.join
-        expect(queue.size).to eq(2)
-      end
-    end
+    #context "given an interval" do
+    #  let(:opts) {
+    #    {
+    #      "interval" => 1,
+    #      "urls" => default_urls,
+    #      "codec" => "json",
+    #      "metadata_target" => metadata_target
+    #    }
+    #  }
+    #  it "should run once in each interval" do
+    #    instance = klass.new(opts)
+    #    instance.register
+    #    queue = Queue.new
+    #    runner = Thread.new do
+    #      instance.run(queue)
+    #    end
+    #    sleep 3
+    #    instance.stop
+    #    runner.kill
+    #    runner.join
+    #    expect(queue.size).to eq(2)
+    #  end
+    #end
 
     context "given both interval and schedule options" do
       let(:opts) {
@@ -263,7 +263,7 @@ describe LogStash::Inputs::HTTP_Poller do
     context "given 'every' expression" do
       let(:opts) {
         {
-          "schedule" => { "every" => "1s"},
+          "schedule" => { "every" => "4s"},
           "urls" => default_urls,
           "codec" => "json",
           "metadata_target" => metadata_target
@@ -273,13 +273,20 @@ describe LogStash::Inputs::HTTP_Poller do
         instance = klass.new(opts)
         instance.register
         queue = Queue.new
+		print ">>> test instance started at #{Time.new.strftime("%Y%m%dT%H%M%S.%L")}\n"
         runner = Thread.new do
           instance.run(queue)
         end
-        sleep 3
+		#time(seconds) => 01234567890
+		#events        => s---e---e--
+		#at 10 seconds, expect 2 events
+		print "sleeping at #{Time.new.strftime("%Y%m%dT%H%M%S.%L")}\n"
+        sleep 10 
+		print "awake at #{Time.new.strftime("%Y%m%dT%H%M%S.%L")}\n"
         instance.stop
         runner.kill
         runner.join
+		print ">>> test instance killed at #{Time.new.strftime("%Y%m%dT%H%M%S.%L")}\n"
         expect(queue.size).to eq(2)
       end
     end
